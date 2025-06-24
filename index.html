@@ -603,7 +603,7 @@
             noResults.style.display = 'none';
             
             container.innerHTML = filteredImages.map(image => `
-                <div class="image-card" onclick="copyToClipboard('${image.s_filepath}', this)">
+                <div class="image-card" onclick="copyToClipboard('${image.original_filepath}', this)">
                     <div class="copy-indicator">Copied to clipboard!</div>
                     <img src="${image.thumbnail_path}" alt="${image.filename}" loading="lazy">
                     <div class="image-info">
