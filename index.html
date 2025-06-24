@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Gallery Browser</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #F5F2EB;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #F7C540, #1C0533);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .controls {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .search-container {
+            margin-bottom: 25px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid #CCC4F2;
+            border-radius: 10px;
+            background-color: #F5F2EB;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #6B57DE;
+            box-shadow: 0 0 10px rgba(107, 87, 222, 0.3);
+        }
+
+        .tags-section h3 {
+            color: #1C0533;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .tag {
+            background-color: #CCC4F2;
+            color: black;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            border: 2px solid transparent;
+            user-select: none;
+        }
+
+        .tag:hover {
+            background-color: #6B57DE;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .tag.selected {
+            background-color: #F7C540;
+            color: white;
+            border-color: #1C0533;
+            font-weight: bold;
+        }
+
+        .selected-tags {
+            margin-bottom: 20px;
+        }
+
+        .selected-tags h4 {
+            color: #1C0533;
+            margin-bottom: 10px;
+        }
+
+        .clear-btn {
+            background-color: #1C0533;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .clear-btn:hover {
+            background-color: #F7C540;
+            transform: translateY(-2px);
+        }
+
+        .results-info {
+            background: linear-gradient(135deg, #6B57DE, #CCC4F2);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-size: 1.1em;
+            text-align: center;
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .image-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .image-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            border-color: #6B57DE;
+        }
+
+        .image-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .image-card:hover img {
+            transform: scale(1.05);
+        }
+
+        .image-info {
+            padding: 20px;
+        }
+
+        .image-filename {
+            font-weight: bold;
+            color: #1C0533;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .image-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .image-tag {
+            background-color: #F5F2EB;
+            color: #1C0533;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            border: 1px solid #CCC4F2;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .no-results h3 {
+            color: #1C0533;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .no-results p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .images-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 15px;
+            }
+            
+            .controls {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🖼️ Image Gallery Browser</h1>
+            <p>Discover and explore our curated collection</p>
+        </div>
+
+        <div class="controls">
+            <div class="search-container">
+                <input type="text" id="searchBox" class="search-box" placeholder="🔍 Search tags...">
+            </div>
+
+            <div class="selected-tags" id="selectedTagsContainer" style="display: none;">
+                <h4>Selected Tags:</h4>
+                <div class="tags-container" id="selectedTags"></div>
+                <button class="clear-btn" onclick="clearAllTags()">Clear All</button>
+            </div>
+
+            <div class="tags-section">
+                <h3>Available Tags:</h3>
+                <div class="tags-container" id="tagsContainer"></div>
+            </div>
+        </div>
+
+        <div class="results-info" id="resultsInfo"></div>
+
+        <div class="images-grid" id="imagesGrid"></div>
+
+        <div class="no-results" id="noResults" style="display: none;">
+            <h3>No images found</h3>
+            <p>Try adjusting your search criteria or selected tags</p>
+        </div>
+    </div>
+
+    <script>
+        let imageData = [];
+        let selectedTags = [];
+        let allTags = [];
+        let tagCounts = {};
+
+        // Load CSV data
+        async function loadImageData() {
+            try {
+                showLoading(true);
+                const response = await fetch('data.csv'); // Your CSV file
+                const csvText = await response.text();
+                
+                // Parse CSV manually (simple parser for this format)
+                const lines = csvText.split('\n');
+                const headers = lines[0].split(',').map(h => h.trim());
+                
+                imageData = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    const values = parseCSVLine(line);
+                    if (values.length >= 4) {
+                        const tags = values[2] ? values[2].split(',').map(tag => tag.trim()).filter(tag => tag && tag !== 'NA') : [];
+                        
+                        imageData.push({
+                            filename: values[0],
+                            image_path: values[1],
+                            tags: tags,
+                            thumbnail_path: values[3]
+                        });
+                    }
+                }
+                
+                showLoading(false);
+                processImageData();
+                renderTags();
+                renderImages();
+                updateResultsInfo();
+                
+            } catch (error) {
+                console.error('Error loading CSV data:', error);
+                showError('Failed to load image data. Please check that data.csv exists in your repository.');
+                showLoading(false);
+            }
+        }
+
+        // Simple CSV parser that handles commas within quoted fields
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            result.push(current.trim());
+            return result;
+        }
+
+        // Show loading indicator
+        function showLoading(show) {
+            let loader = document.getElementById('loader');
+            if (show) {
+                if (!loader) {
+                    loader = document.createElement('div');
+                    loader.id = 'loader';
+                    loader.innerHTML = `
+                        <div style="text-align: center; padding: 60px; background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                            <div style="font-size: 2em; margin-bottom: 20px;">📚</div>
+                            <h3 style="color: #1C0533; margin-bottom: 15px;">Loading Image Data...</h3>
+                            <p style="color: #666;">Please wait while we fetch your image collection</p>
+                        </div>
+                    `;
+                    document.getElementById('imagesGrid').appendChild(loader);
+                }
+            } else {
+                if (loader) loader.remove();
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            const container = document.getElementById('imagesGrid');
+            container.innerHTML = `
+                <div style="text-align: center; padding: 60px; background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                    <div style="font-size: 2em; margin-bottom: 20px;">⚠️</div>
+                    <h3 style="color: #1C0533; margin-bottom: 15px;">Error Loading Data</h3>
+                    <p style="color: #666;">${message}</p>
+                </div>
+            `;
+        }
+
+        // Initialize the application
+        function init() {
+            // Add search functionality
+            document.getElementById('searchBox').addEventListener('input', handleSearch);
+            
+            // Load data from CSV
+            loadImageData();
+        }
+
+        // Process image data to extract all tags and their counts
+        function processImageData() {
+            tagCounts = {};
+            
+            imageData.forEach(image => {
+                image.tags.forEach(tag => {
+                    if (tag && tag !== 'NA') {
+                        tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+                    }
+                });
+            });
+            
+            // Sort tags by frequency (most common first)
+            allTags = Object.keys(tagCounts).sort((a, b) => tagCounts[b] - tagCounts[a]);
+        }
+
+        // Handle search input
+        function handleSearch() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            renderTags(searchTerm);
+        }
+
+        // Render tags based on search and selection
+        function renderTags(searchTerm = '') {
+            const container = document.getElementById('tagsContainer');
+            
+            // Filter tags based on search term
+            let filteredTags = allTags.filter(tag => 
+                tag.toLowerCase().includes(searchTerm) && !selectedTags.includes(tag)
+            );
+            
+            // Sort: selected tags first, then by frequency
+            filteredTags.sort((a, b) => {
+                const aSelected = selectedTags.includes(a);
+                const bSelected = selectedTags.includes(b);
+                
+                if (aSelected && !bSelected) return -1;
+                if (!aSelected && bSelected) return 1;
+                
+                return tagCounts[b] - tagCounts[a];
+            });
+            
+            container.innerHTML = filteredTags.map(tag => 
+                `<span class="tag" onclick="toggleTag('${tag}')">${tag} (${tagCounts[tag]})</span>`
+            ).join('');
+        }
+
+        // Render selected tags
+        function renderSelectedTags() {
+            const container = document.getElementById('selectedTags');
+            const selectedContainer = document.getElementById('selectedTagsContainer');
+            
+            if (selectedTags.length === 0) {
+                selectedContainer.style.display = 'none';
+                return;
+            }
+            
+            selectedContainer.style.display = 'block';
+            container.innerHTML = selectedTags.map(tag => 
+                `<span class="tag selected" onclick="toggleTag('${tag}')">${tag} ✕</span>`
+            ).join('');
+        }
+
+        // Toggle tag selection
+        function toggleTag(tag) {
+            const index = selectedTags.indexOf(tag);
+            
+            if (index === -1) {
+                selectedTags.push(tag);
+            } else {
+                selectedTags.splice(index, 1);
+            }
+            
+            renderTags(document.getElementById('searchBox').value.toLowerCase());
+            renderSelectedTags();
+            renderImages();
+            updateResultsInfo();
+        }
+
+        // Clear all selected tags
+        function clearAllTags() {
+            selectedTags = [];
+            renderTags(document.getElementById('searchBox').value.toLowerCase());
+            renderSelectedTags();
+            renderImages();
+            updateResultsInfo();
+        }
+
+        // Filter images based on selected tags
+        function getFilteredImages() {
+            if (selectedTags.length === 0) {
+                return imageData;
+            }
+            
+            return imageData.filter(image => 
+                selectedTags.every(selectedTag => 
+                    image.tags.includes(selectedTag)
+                )
+            );
+        }
+
+        // Render images
+        function renderImages() {
+            const filteredImages = getFilteredImages();
+            const container = document.getElementById('imagesGrid');
+            const noResults = document.getElementById('noResults');
+            
+            if (filteredImages.length === 0) {
+                container.style.display = 'none';
+                noResults.style.display = 'block';
+                return;
+            }
+            
+            container.style.display = 'grid';
+            noResults.style.display = 'none';
+            
+            container.innerHTML = filteredImages.map(image => `
+                <div class="image-card">
+                    <img src="${image.thumbnail_path}" alt="${image.filename}" loading="lazy">
+                    <div class="image-info">
+                        <div class="image-filename">${image.filename}</div>
+                        <div class="image-tags">
+                            ${image.tags.filter(tag => tag !== 'NA').map(tag => 
+                                `<span class="image-tag">${tag}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Update results information
+        function updateResultsInfo() {
+            const filteredImages = getFilteredImages();
+            const container = document.getElementById('resultsInfo');
+            
+            if (selectedTags.length === 0) {
+                container.innerHTML = `📊 Showing all ${imageData.length} images`;
+            } else {
+                container.innerHTML = `🎯 Found ${filteredImages.length} images matching ${selectedTags.length} selected tag${selectedTags.length > 1 ? 's' : ''}`;
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
