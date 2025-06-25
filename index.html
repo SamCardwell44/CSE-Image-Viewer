@@ -132,6 +132,33 @@
             font-weight: bold;
         }
 
+        .category-tag {
+            background-color: #F7C540;
+            color: black;
+            padding: 10px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 15px;
+            font-weight: 600;
+            border: 2px solid transparent;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .category-tag:hover {
+            background-color: #E6B139;
+            color: black;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .category-tag.selected {
+            background-color: #1C0533;
+            color: white;
+            border-color: #F7C540;
+        }
+
         .selected-tags {
             margin-bottom: 20px;
         }
@@ -163,7 +190,7 @@
         }
 
         .results-info {
-            background:#6B57DE
+            background:#6B57DE;
             color: white;
             padding: 15px 25px;
             border-radius: 10px;
@@ -312,6 +339,11 @@
             </div>
 
             <div class="tags-section">
+                <h3>Categories:</h3>
+                <div class="tags-container" id="categoriesContainer"></div>
+            </div>
+
+            <div class="tags-section">
                 <h3>Available Tags:</h3>
                 <div class="tags-container" id="tagsContainer"></div>
             </div>
@@ -332,6 +364,14 @@
         let selectedTags = [];
         let allTags = [];
         let tagCounts = {};
+        
+        // Define main categories (in lowercase for matching)
+        const mainCategories = [
+            "buildings (general)", "damp & condensation", "demos and events", 
+            "energy supply", "energy use", "fuel poverty", "health", "homes", 
+            "illustrations and icons", "insulation", "maps", "nature", "objects", 
+            "people", "places", "transport", "water use", "weather & climate impacts"
+        ];
 
         // Load CSV data
         async function loadImageData() {
@@ -365,6 +405,7 @@
                 
                 showLoading(false);
                 processImageData();
+                renderCategories();
                 renderTags();
                 renderImages();
                 updateResultsInfo();
@@ -510,7 +551,27 @@
         // Handle search input
         function handleSearch() {
             const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            renderCategories(searchTerm);
             renderTags(searchTerm);
+        }
+
+        // Render categories based on search and selection
+        function renderCategories(searchTerm = '') {
+            const container = document.getElementById('categoriesContainer');
+            const dynamicCounts = getDynamicTagCounts();
+            
+            // Filter categories based on search term and exclude selected tags
+            let filteredCategories = mainCategories.filter(category => 
+                category.toLowerCase().includes(searchTerm) && !selectedTags.includes(category)
+            );
+            
+            // Sort by dynamic count (highest first)
+            filteredCategories.sort((a, b) => (dynamicCounts[b] || 0) - (dynamicCounts[a] || 0));
+            
+            container.innerHTML = filteredCategories.map(category => {
+                const count = dynamicCounts[category] || 0;
+                return `<span class="category-tag ${count === 0 ? 'disabled' : ''}" onclick="toggleTag('${category}')">${category} (${count})</span>`;
+            }).join('');
         }
 
         // Render tags based on search and selection
@@ -518,9 +579,11 @@
             const container = document.getElementById('tagsContainer');
             const dynamicCounts = getDynamicTagCounts();
             
-            // Filter tags based on search term and exclude selected tags
+            // Filter tags based on search term, exclude selected tags, and exclude main categories
             let filteredTags = allTags.filter(tag => 
-                tag.toLowerCase().includes(searchTerm) && !selectedTags.includes(tag)
+                tag.toLowerCase().includes(searchTerm) && 
+                !selectedTags.includes(tag) &&
+                !mainCategories.includes(tag.toLowerCase())
             );
             
             // Sort by dynamic count (highest first)
@@ -543,9 +606,11 @@
             }
             
             selectedContainer.style.display = 'block';
-            container.innerHTML = selectedTags.map(tag => 
-                `<span class="tag selected" onclick="toggleTag('${tag}')">${tag} ✕</span>`
-            ).join('');
+            container.innerHTML = selectedTags.map(tag => {
+                const isCategory = mainCategories.includes(tag.toLowerCase());
+                const className = isCategory ? 'category-tag selected' : 'tag selected';
+                return `<span class="${className}" onclick="toggleTag('${tag}')">${tag} ✕</span>`;
+            }).join('');
         }
 
         // Toggle tag selection
@@ -558,6 +623,7 @@
                 selectedTags.splice(index, 1);
             }
             
+            renderCategories(document.getElementById('searchBox').value.toLowerCase());
             renderTags(document.getElementById('searchBox').value.toLowerCase());
             renderSelectedTags();
             renderImages();
@@ -567,6 +633,7 @@
         // Clear all selected tags
         function clearAllTags() {
             selectedTags = [];
+            renderCategories(document.getElementById('searchBox').value.toLowerCase());
             renderTags(document.getElementById('searchBox').value.toLowerCase());
             renderSelectedTags();
             renderImages();
