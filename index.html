@@ -708,7 +708,7 @@
             );
             
             // Limit rendered tags for performance (show top 200)
-            const maxTagsToShow = 200;
+            const maxTagsToShow = 1000;
             filteredTags = filteredTags.slice(0, maxTagsToShow);
             
             filteredTags.sort((a, b) => (dynamicCounts[b] || 0) - (dynamicCounts[a] || 0));
