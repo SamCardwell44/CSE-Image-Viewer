@@ -368,15 +368,7 @@
             100% { transform: rotate(360deg); }
         }
 
-        .performance-info {
-            background: #F7C540;
-            color: #1C0533;
-            padding: 10px 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            text-align: center;
-        }
+        
 
         @media (max-width: 768px) {
             .container {
@@ -467,13 +459,7 @@
         let searchTimeout;
         let isLoading = false;
         
-        // Performance tracking
-        let performanceMetrics = {
-            loadTime: 0,
-            searchTime: 0,
-            renderTime: 0
-        };
-
+        
         // Define main categories (in lowercase for matching)
         const mainCategories = [
             "houses and buildings", "damp & condensation",
@@ -546,7 +532,6 @@
                     
                     // Allow UI to update between batches
                     if (i % (batchSize * 5) === 0) {
-                        updatePerformanceInfo(`Loading... ${Math.round((i / lines.length) * 100)}%`);
                         await new Promise(resolve => setTimeout(resolve, 1));
                     }
                 }
@@ -614,10 +599,7 @@
             }
         }
 
-        // Update performance info
-        function updatePerformanceInfo(message) {
-            document.getElementById('performanceInfo').textContent = message;
-        }
+        
 
         // Show error message
         function showError(message) {
