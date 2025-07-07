@@ -403,7 +403,13 @@
     <div class="container">
         <div class="header">
             <h1>🖼️ Image Gallery Browser</h1>
+            <p>Optimized for performance with smart loading</p>
         </div>
+
+        <div class="performance-info" id="performanceInfo">
+            ⚡ Loading optimizations active
+        </div>
+
         <div class="controls">
             <div class="search-container">
                 <input type="text" id="searchBox" class="search-box" placeholder="🔍 Search tags...">
@@ -627,7 +633,7 @@
                 if (searchTime > 10) {
                     updatePerformanceInfo(`🔍 Search completed in ${Math.round(searchTime)}ms`);
                 }
-            }, 50); // 50ms debounce
+            }, 300); // 300ms debounce
         }
 
         // Get filtered images (cached for performance)
